@@ -1,0 +1,34 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+form {
+    background-color: rgba(0, 0, 0, 0.5);
+    padding: 8px;
+    border-radius: 9px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    width: fit-content;
+}
+
+input {
+    height: 30px;
+    border-radius: 4px;
+    font-size: 1rem;
+}
+
+.arrow {
+    font-weight: 900;
+    font-size: large;
+    cursor: pointer;
+    background-color: red;
+    width: fit-content;
+    padding: 8px 12px;
+    border-radius: 50px;
+    position: fixed;
+    right: 0;
+    bottom: 0;
+}
