@@ -1,101 +1,110 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 function App() {
-  const nomeCompleto = useRef('')
-  const specializzazione = useRef('')
-  const anniDiEsperienza = useRef(0);
-  const [username, setUsername] = useState('') //
-  const [password, setPassword] = useState('') //
-  const [descrizione, setDescrizione] = useState('') //
-  const [error, setError] = useState({}) //
+  const nomeCompletoRef = useRef()
+  const specializzazione = useRef()
+  const anniDiEsperienza = useRef();
+  const [username, setUsername] = useState('Marco00') //
+  const [password, setPassword] = useState('?0sadfasdf') //
+  const [descrizione, setDescrizione] = useState('porova desciriozne') //
 
   const letters = "abcdefghijklmnopqrstuvwxyz";
   const numbers = "0123456789";
   const symbols = `!@#$%^&*()-_=+[]{}|;:'\\",.<>?/\`~`;
 
-  function formReset() {
-    nomeCompleto.current.value = '';
-    specializzazione.current.value = '';
-    anniDiEsperienza.current.value = 0;
-    setUsername('')
-    setPassword('')
-    setDescrizione('')
-    setError({})
-  }
 
   const postSubmit = (e) => {
     e.preventDefault();
 
-    const checkNomeCompleto = nomeCompleto.current?.value.trim() !== '';
-    const checkUsername = username.trim() !== '';
-    const checkPassword = password.trim() !== '';
-    const checkSpecializzazione = specializzazione.current?.value !== '';
-    const checkAnniDiEsperienza = anniDiEsperienza.current?.value !== '' && anniDiEsperienza.current?.value > 0;
-    const checkDescrizione = descrizione.trim() !== '';
+    const anniEsperienza = Number(anniDiEsperienza.current?.value || 0);
 
-    if (checkNomeCompleto && checkUsername && checkPassword && checkSpecializzazione && checkAnniDiEsperienza && checkDescrizione) {
-      console.log(`nome: ${nomeCompleto.current?.value}, username: ${username}, password: ${password}, 
-        specialistica: ${specializzazione.current?.value}, anni di esperienza: ${anniDiEsperienza.current?.value}, 
-        descrizione: ${descrizione}`);
+    if (
+      !nomeCompletoRef.current?.value.trim() ||
+      !username.trim() ||
+      !password.trim() ||
+      !specializzazione.current?.value.trim() ||
+      anniEsperienza <= 0 ||
+      descrizione.trim().length < 100 ||  // FIXATO IL CONTROLLO
+      !isPasswordValid ||
+      !isUsernameValid ||
+      !idDescriptioValid
+    ) {
+      alert("Errore: compilare tutti i campi correttamente");
+      return;
     }
+    console.log(`
+      nome: ${nomeCompletoRef.current?.value}, 
+      username: ${username}, 
+      password: ${password}, 
+      specialistica: ${specializzazione.current?.value}, 
+      anni di esperienza: ${anniDiEsperienza.current?.value}, 
+      descrizione: ${descrizione}`);
 
   }
 
   useEffect(() => {
-    nomeCompleto.current.focus()
+    nomeCompletoRef.current.focus()
   }, [])
 
-  useEffect(() => {
+  function formReset() {
+    nomeCompletoRef.current.value = '';
+    specializzazione.current.value = '';
+    anniDiEsperienza.current.value = '';
+    setUsername('')
+    setPassword('')
+    setDescrizione('')
+    nomeCompletoRef.current.focus()
+  }
 
-    if ([...username].some(char => symbols.includes(char))) {
-      setError(e => ({ ...e, username: { status: 'red', message: 'username non deve includere simboli' } }))
-    } else if (username.length < 5) {
-      setError(e => ({ ...e, username: { status: 'red', message: 'username troppo breve' } }))
-    } else {
-      setError(e => ({ ...e, username: { status: 'green', message: '✓' } }))
-    }
+  const isUsernameValid = useMemo(() => {
+    const charsValid = [...username].every(char =>
+      numbers.includes(char) || letters.includes(char.toLowerCase()));
+    return charsValid && username.trim().length >= 6
+  }, [username])
 
-    console.log(error);
+  const isPasswordValid = useMemo(() => {
 
-    const lettersInPassword = [...password].some(char => letters.includes(char))
-    const numbersInPassword = [...password].some(char => numbers.includes(char))
-    const symbolsInPassword = [...password].some(char => symbols.includes(char))
+    return (
+      password.trim().length >= 8 &&
+      [...password].some(char => letters.includes(char)) &&
+      [...password].some(char => numbers.includes(char)) &&
+      [...password].some(char => symbols.includes(char))
+    )
+  }, [password])
 
-    if (password.length < 8) {
-      setError(e => ({ ...e, password: { status: 'red', message: 'la password deve essere di almeno 8 caratteri' } }))
-    } else if (!(lettersInPassword && numbersInPassword && symbolsInPassword)) {
-      setError(e => ({ ...e, password: { status: 'red', message: 'la password deve contenere almeno una lettera un numero e un simbolo' } }))
-    } else {
-      setError(e => ({ ...e, password: { status: 'green', message: '✓' } }))
-    }
+  const idDescriptioValid = useMemo(() => {
+    return (
+      descrizione.trim().length >= 100
+      && descrizione.trim().length <= 1000
+    )
+  }, [descrizione])
 
-    if (descrizione.trim().length < 10) {
-      setError(e => ({ ...e, descrizione: { status: 'red', message: 'la descrizione deve essere di almeno 100 caratteri' } }))
-    } else if (descrizione.trim().length > 1000) {
-      setError(e => ({ ...e, descrizione: { status: 'red', message: 'la descrizione non deve essere più di 1000 caratteri' } }))
-    } else {
-      setError(e => ({ ...e, descrizione: { status: 'green', message: '✓' } }))
-    }
-  }, [username, password, descrizione])
+  const formRef = useRef();
 
   return (
     <>
-      <form>
-        <label htmlFor="nomeCompleto">Nome completo</label>
-        <input type="text" id='nomeCompleto' name='nomeCompleto' ref={nomeCompleto} />
-        {error.username && <p style={{ backgroundColor: error.username.status, minWidth: '10px', minHeight: '10px' }}>{error.username.message}</p>}
+      <form ref={formRef}>
+        <label htmlFor="nomeCompletoRef">Nome completo</label>
+        <input type="text" id='nomeCompletoRef' name='nomeCompletoRef' ref={nomeCompletoRef} />
         <label htmlFor="username">Username</label>
         <input type="text" id='username' name='username'
           onChange={e => setUsername(e.target.value)}
           value={username} />
-        {error.password && <p style={{ backgroundColor: error.password.status }}>{error.password.message}</p>}
+        {username.trim() && (
+          <p style={{ color: isUsernameValid ? 'green' : 'red' }}>
+            {isUsernameValid ? 'Username Valido' : 'Username di almeno 6 caratteri alfanumerici'}
+          </p>)}
         <label htmlFor="password">Password</label>
         <input type="password" id='password' name='password'
           onChange={e => setPassword(e.target.value)}
           value={password} />
+        {password.trim() && (
+          <p style={{ color: isPasswordValid ? 'green' : 'red' }}>
+            {isPasswordValid ? 'Password Valida' : 'Password di almeno 8 caratteri un numero e un simbolo'}
+          </p>)}
         <label htmlFor="specializzazione">Specializzazione</label>
         <select ref={specializzazione}>
-          {/* "Full Stack", "Frontend", "Backend" */}
+          <option value="">Seleziona</option>
           <option value="Full Stack">Full Stack</option>
           <option value="Frontend">Frontend</option>
           <option value="Backend">Backend</option>
@@ -103,16 +112,19 @@ function App() {
         <label htmlFor="anniDiEsperienza">Esperienza</label>
         <input type="number" id='anniDiEsperienza' name='anniDiEsperienza'
           ref={anniDiEsperienza} />
-        {error.descrizione && <p style={{ backgroundColor: error.descrizione.status }}>{error.descrizione.message}</p>}
         <label htmlFor="descrizione">Descrizione</label>
         <textarea id='descrizione' name='descrizione'
           onChange={e => setDescrizione(e.target.value)}
           value={descrizione} />
+        {descrizione.trim() && (
+          <p style={{ color: idDescriptioValid ? 'green' : 'red' }}>
+            {idDescriptioValid ? 'Descrizione valida' : `Descrizione compresa tra 100 e 1000 caratteri (${descrizione.length})`}
+          </p>)}
         <button type='submit' onClick={postSubmit}>Submit</button>
         <button type='reset' onClick={formReset}>Reset</button>
       </form>
       <div style={{ height: '200vh', position: 'relative', backgroundColor: 'green' }}>
-        <div className='arrow' onClick={() => { }}>↑</div>
+        <div className='arrow' onClick={() => { formRef.current.scrollIntoView({ behavior: 'smooth' }) }}>↑</div>
       </div>
     </>
   )
